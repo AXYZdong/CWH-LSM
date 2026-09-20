@@ -1,0 +1,10 @@
+torch>=1.13
+torchvision>=0.14
+bindsnet>=0.3.3
+numpy>=1.23
+matplotlib>=3.6
+tqdm>=4.64
+scikit-learn>=1.2
+seaborn>=0.12
+scipy>=1.9
+h5py>=3.7

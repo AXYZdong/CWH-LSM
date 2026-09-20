@@ -38,6 +38,7 @@ parser.add_argument("--cuda_name", type=str, default='cuda:1')
 parser.add_argument("--mode", type=str, default='MNIST')
 parser.add_argument("--weight_mode", type=str, default='Gaussian')
 parser.add_argument("--hybrid", dest="hybrid", action="store_true")
+parser.add_argument("--data_root", type=str, default='./data', help="Root directory of datasets")
 
 parser.set_defaults(plot=True, gpu=True, hybrid=True)
 
@@ -175,7 +176,7 @@ if args.mode == "MNIST":
     dataset = MNIST(
         PoissonEncoder(time=time, dt=dt),
         None,
-        root=os.path.join("/home/zhangyoudong", "data", "MNIST"),
+        root=os.path.join(args.data_root, "MNIST"),
         download=True,
         transform=transforms.Compose(
             [transforms.ToTensor(), transforms.Lambda(lambda x: x * intensity)]
@@ -184,11 +185,11 @@ if args.mode == "MNIST":
     )
 
 elif args.mode == "FSDD":
-    dataset = SpokenMNIST(path='/home/zhangyoudong/data/FSDD', download=False, split=0.8, train=True,
+    dataset = SpokenMNIST(path=os.path.join(args.data_root, "FSDD"), download=False, split=0.8, train=True,
                                   shuffle=True, audio_encoder=PoissonEncoder(time=time, dt=dt), mfcc_dimensions=28)
 
 elif args.mode == "N-MNIST":
-    dataset = NMNIST("/home/zhangyoudong/data/NMNIST", trian=True)
+    dataset = NMNIST(os.path.join(args.data_root, "NMNIST"), trian=True)
 
 else:
     raise ValueError(f"Unsupported dataset: {args.mode}")
@@ -275,4 +276,9 @@ training_pairs_dicts = [
     for spikes, label in training_pairs
 ]
 
-torch.save(training_pairs_dicts, open('./LSM_OUT/{}.pt'.format(save_name), "wb"))
+# Save directly in the layout expected by MLP.py / SD-SOM.py:
+# LSM_OUT/{MNIST|FSDD|NMNIST}/*_all.pt
+dataset_dir = "NMNIST" if args.mode == "N-MNIST" else args.mode
+save_dir = os.path.join("./LSM_OUT", dataset_dir)
+os.makedirs(save_dir, exist_ok=True)
+torch.save(training_pairs_dicts, open(os.path.join(save_dir, f'{save_name}_all.pt'), "wb"))
