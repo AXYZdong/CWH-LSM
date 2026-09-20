@@ -11,6 +11,7 @@ CWH-LSM/
 ├── CWH_LSM.py                  # Build CWH-LSM reservoir, encode dataset into spike features
 ├── MLP.py                      # MLP readout trained on saved spike features
 ├── SD-SOM.py                   # SOM readout trained on saved spike features
+├── Ridge_Regression.py         # Ridge Regression readout trained on saved spike features
 ├── Network/
 │   └── liquid_state_network.py # LSM builder + weight initializers (Gamma/Gaussian/Pareto/Cauchy)
 ├── Dataset/
