@@ -44,12 +44,12 @@ class GammaWeightRandMask(WeightInitializer):
             torch.Size([input_size, output_size])
         )
 
-        negative_mask = torch.rand(input_size, output_size) < 0.5
-        weights[negative_mask] = -weights[negative_mask]
-
         if self.sparsity > 0:
             mask = torch.rand(input_size, output_size) < self.sparsity
             weights *= mask.float()
+
+        negative_mask = torch.rand(input_size, output_size) < 0.2
+        weights[negative_mask] = -weights[negative_mask]
 
         return weights
 
@@ -66,12 +66,12 @@ class GammaWeightRandnMask(WeightInitializer):
             torch.Size([input_size, output_size])
         )
 
-        negative_mask = torch.randn(input_size, output_size) < 0.5
-        weights[negative_mask] = -weights[negative_mask]
-
         if self.sparsity > 0:
             mask = torch.randn(input_size, output_size) < self.sparsity
             weights *= mask.float()
+
+        negative_mask = torch.randn(input_size, output_size) < 0.2
+        weights[negative_mask] = -weights[negative_mask]
 
         return weights
 
@@ -79,7 +79,7 @@ class GammaWeightRandnMask(WeightInitializer):
 
 class ParetoWeightRandnMask(WeightInitializer):
     def __init__(self, alpha: float = 0.2, xm: float = 0.5,
-                 scale_factor: float = 0.5, sparsity: float = 0.0):
+                 scale_factor: float = 0.05, sparsity: float = 0.0):
         self.alpha = alpha
         self.xm = xm
         self.scale_factor = scale_factor
@@ -91,14 +91,14 @@ class ParetoWeightRandnMask(WeightInitializer):
 
         weights = self.scale_factor * weights
 
-        negative_mask = torch.randn(input_size, output_size) < 0.5
-        weights[negative_mask] = -weights[negative_mask]
-
         if self.sparsity > 0:
             mask = torch.rand(input_size, output_size) < self.sparsity
             weights *= mask.float()
 
-        return weights
+        negative_mask = torch.randn(input_size, output_size) < 0.2
+        weights[negative_mask] = -weights[negative_mask]
+
+        return torch.clamp(weights, min=-10, max=10)
 
 
 class CauchyWeightRandnMask(WeightInitializer):
@@ -114,14 +114,13 @@ class CauchyWeightRandnMask(WeightInitializer):
         weights = cauchy_dist.sample(torch.Size([input_size, output_size]))
 
         weights = self.scale_factor * weights
-
-        sign_mask = torch.rand(input_size, output_size) < 0.5
-        weights[sign_mask] = -weights[sign_mask]
-
-        # 应用稀疏化
+        
         if self.sparsity > 0:
             sparsity_mask = torch.rand(input_size, output_size) < self.sparsity
             weights *= sparsity_mask.float()
+
+        sign_mask = torch.rand(input_size, output_size) < 0.5
+        weights[sign_mask] = -weights[sign_mask]
 
         return weights
 
